@@ -1,0 +1,86 @@
+/* In your Login.css or in the CSS file for the component */
+
+.login-container {
+    background-image: url('/images/login3.jpg');
+    background-size: cover; /* Ensure the image covers the entire container */
+    background-position: center; /* Center the background image */
+    min-height: 100vh; /* Make sure the container takes up the full height of the screen */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-panel {
+    background-color: rgba(
+        134,
+        130,
+        121,
+        0.8
+    ); /* White background with some transparency */
+    padding: 60px;
+    border-radius: 60px;
+    box-shadow: 0px 4px 6px rgba(47, 36, 36, 0.1);
+    width: 100%;
+    max-width: 700px; /* You can set a max width for the login panel */
+}
+
+/* Additional styling for signup-h2 */
+.login-h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-style: inherit;
+    font-size: 2.5rem; /* Adjust the font size to make the heading larger */
+    font-weight: 600; /* Make the font bold for emphasis */
+    color: #161313; /* Dark text color for readability */
+    letter-spacing: 1px; /* Adds some space between letters for a cleaner look */
+    text-transform: uppercase; /* Make the text uppercase for a more prominent look */
+    border-bottom: 2px solid #09092e; /* A subtle bottom border in the same color as the button */
+    padding-bottom: 10px; /* Adds some space below the text for balance */
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #1f0a0a;
+    border-radius: 5px;
+}
+
+.login-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #3e3e48;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.Signup-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #0d5064;
+    border: none;
+    color: rgb(255, 253, 253);
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.login-button:hover {
+    background-color: #7f91a4;
+}
+
+/* In Login.css */
+
+body.dark-mode .login-panel {
+    background-color: rgba(30, 30, 30, 0.7);
+}
+
+body.dark-mode .login-h2 {
+    color: white;
+}
+
+body.dark-mode input {
+    background-color: #2d2d2d;
+    color: white;
+}
