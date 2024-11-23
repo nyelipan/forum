@@ -1,7 +1,7 @@
 // PostItem.tsx
 import React from 'react';
 import { AiOutlineCopy, AiOutlineLike } from 'react-icons/ai';
-import { FaReply } from 'react-icons/fa';
+import { FaReply, FaTrash } from 'react-icons/fa';
 
 import { Button } from './ui/button'; // Ensure this is the correct path
 
@@ -15,6 +15,7 @@ interface PostItemProps {
     onLikeClick: (postId: string) => void;
     onReplyClick: (postId: string) => void;
     onCopyClick: (text: string) => void;
+    onDeleteClick: (postId: string) => void;
 }
 
 const PostItem: React.FC<PostItemProps> = ({
@@ -27,6 +28,7 @@ const PostItem: React.FC<PostItemProps> = ({
     onLikeClick,
     onReplyClick,
     onCopyClick,
+    onDeleteClick,
 }) => {
     return (
         <div className='border p-4 rounded-md shadow-md'>
@@ -45,7 +47,7 @@ const PostItem: React.FC<PostItemProps> = ({
                 <Button
                     onClick={() => onReplyClick(postId)}
                     label='Reply'
-                    icon={<AiOutlineLike />}
+                    icon={<FaReply />}
                 />
                 <Button
                     onClick={() => onLikeClick(postId)}
@@ -56,6 +58,12 @@ const PostItem: React.FC<PostItemProps> = ({
                     onClick={() => onCopyClick(context)}
                     label='Copy'
                     icon={<AiOutlineCopy />}
+                />
+                <Button
+                    onClick={() => onDeleteClick(postId)}
+                    label='Delete'
+                    icon={<FaTrash />}
+                    className='text-red-700'
                 />
             </div>
         </div>

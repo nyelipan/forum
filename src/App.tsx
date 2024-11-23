@@ -1,4 +1,5 @@
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import path from 'path';
 import { useState } from 'react';
 import {
 	BrowserRouter as Router,
@@ -9,13 +10,14 @@ import {
 
 import { ThemeProvider } from '@/components/theme-provider'; // Assuming this is the correct path
 
+import Biodata from './components/Biodata';
 import ForumList from './components/ForumList';
-import HomePage from './components/HomePage';
-import Login from './components/Login';
 import { ModeToggle } from './components/mode-toggle';
 import SetNicknameForm from './components/SetNicknameForm';
-import SignUp from './components/SignUp';
 import { auth } from './firebase'; // Ensure you're importing auth
+import HomePage from './pages/HomePage';
+import Login from './pages/Login';
+import SignUp from './pages/SignUp';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -44,6 +46,7 @@ const App = () => {
                     <Route path='/signup' element={<SignUp />} />
                     <Route path='/home' element={<HomePage />} />
                     <Route path='/nickname' element={<SetNicknameForm />} />
+                    <Route path='/Biodata' element={<Biodata />} />
                 </Routes>
             </Router>
         </ThemeProvider>

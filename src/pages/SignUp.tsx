@@ -1,13 +1,13 @@
-import './ui/signup.css';
+import '../components/ui/signup.css';
 
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { Button } from '../components/ui/button';
+import Header from '../components/ui/Header';
+import { Input } from '../components/ui/input';
 import { auth } from '../firebase';
-import { Button } from './ui/button';
-import Header from './ui/Header';
-import { Input } from './ui/input';
 
 const SignUp = () => {
     const [email, setEmail] = useState('');

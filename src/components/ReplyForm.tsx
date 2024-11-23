@@ -3,15 +3,28 @@ import { useState } from 'react';
 
 import { auth, db } from '../firebase';
 
-const ReplyForm = ({postId, onClose}) => {
+interface ReplyFormProps {
+    postId: string;
+    onClose: () => void;
+}
+
+const ReplyForm: React.FC<ReplyFormProps> = ({postId, onClose}) => {
     const [replyText, setReplyText] = useState('');
 
-    const handleReplySubmit = async (e) => {
+    const handleReplySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        // Ensure the reply text is not empty
         if (replyText.trim() === '') return;
 
+        // Ensure the user is authenticated
+        if (!auth.currentUser) {
+            console.error('User is not authenticated');
+            return;
+        }
+
         try {
-            // Add the reply to the 'replies' sub-collection of the post
+            // Prepare the new reply object
             const newReply = {
                 text: replyText,
                 createdAt: serverTimestamp(),
@@ -19,9 +32,15 @@ const ReplyForm = ({postId, onClose}) => {
                 userNickname: auth.currentUser?.displayName,
             };
 
+            // Add the reply to Firestore under the specific postId
             await addDoc(collection(db, 'posts', postId, 'replies'), newReply);
+
+            // Clear the reply text input after submission
             setReplyText('');
-            onClose(); // Close reply form after submission
+
+            // Close the reply form after successful submission
+            onClose();
+            console.log('Reply submitted successfully');
         } catch (error) {
             console.error('Error adding reply: ', error);
         }
@@ -36,19 +55,21 @@ const ReplyForm = ({postId, onClose}) => {
                 className='border border-gray-300 p-2 w-full mb-4 rounded-md'
                 required
             />
-            <button
-                type='submit'
-                className='bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md'
-            >
-                Submit Reply
-            </button>
-            <button
-                type='button'
-                onClick={onClose}
-                className='bg-red-500 hover:bg-red-600 text-white py-1 px-4 rounded-md ml-2'
-            >
-                Close
-            </button>
+            <div className='flex justify-end'>
+                <button
+                    type='submit'
+                    className='bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md mr-2'
+                >
+                    Submit Reply
+                </button>
+                <button
+                    type='button'
+                    onClick={onClose}
+                    className='bg-red-500 hover:bg-red-600 text-white py-1 px-4 rounded-md'
+                >
+                    Close
+                </button>
+            </div>
         </form>
     );
 };

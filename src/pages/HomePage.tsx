@@ -1,7 +1,8 @@
-import { getAuth } from 'firebase/auth';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import {
 	addDoc,
 	collection,
+	deleteDoc,
 	doc,
 	getDocs,
 	onSnapshot,
@@ -14,12 +15,14 @@ import { useNavigate } from 'react-router-dom';
 
 import { Progress } from '@/components/ui/progress';
 
+import AvatarDemo from '../components/AvatarDemo';
+import PostForm from '../components/PostForm';
+import PostList from '../components/PostList';
+import RepliesList from '../components/RepliesList';
+import ReplyForm from '../components/ReplyForm';
+import { NavigationMenuDemo } from '../components/ui/NavigationMenuDemo';
 import { auth, db } from '../firebase'; // Ensure these are correctly configured
-import PostForm from './PostForm';
-import PostList from './PostList';
-import RepliesList from './RepliesList'; // If RepliesList is used later
 
-// Define Post and Reply interfaces here if they're not imported
 interface Post {
     id: string;
     title: string;
@@ -42,12 +45,27 @@ const HomePage: React.FC = () => {
     const [posts, setPosts] = useState<Post[]>([]);
     const [replies, setReplies] = useState<{[key: string]: Reply[]}>({});
     const [loading, setLoading] = useState(true);
-    const [userName, setUserName] = useState<string | null>(null); // Store user's name
+    const [userName, setUserName] = useState<string | null>(null);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const navigate = useNavigate();
+
+    const handleDeletePost = async (postId: string) => {
+        try {
+            // Delete post from Firestore
+            await deleteDoc(doc(db, 'posts', postId));
+
+            // Update local state to remove the deleted post
+            setPosts((prevPosts) =>
+                prevPosts.filter((post) => post.id !== postId),
+            );
+        } catch (error) {
+            console.error('Error deleting post: ', error);
+        }
+    };
 
     useEffect(() => {
         const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
-        const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+        const unsubscribePosts = onSnapshot(q, async (querySnapshot) => {
             setLoading(true);
             const postsData: Post[] = [];
             const repliesData: {[key: string]: Reply[]} = {};
@@ -72,32 +90,48 @@ const HomePage: React.FC = () => {
             setLoading(false);
         });
 
-        // Get current user and set userName for greeting
-        const user = getAuth().currentUser;
-        if (user) {
-            setUserName(user.displayName || user.email);
-        }
+        // Handle auth state change
+        const authInstance = getAuth(); // Use this auth instance consistently
+        const unsubscribeAuth = onAuthStateChanged(authInstance, (user) => {
+            if (user) {
+                setUserName(user.displayName || user.email);
+                setCurrentUserId(user.uid);
+            } else {
+                setUserName(null);
+                setCurrentUserId(null);
+            }
+        });
 
-        return () => unsubscribe();
-    }, []);
+        // Cleanup subscriptions on unmount
+        return () => {
+            unsubscribePosts(); // Unsubscribe from Firestore updates
+            unsubscribeAuth(); // Unsubscribe from auth listener
+        };
+    }, []); // Empty dependency array so the effect runs once
 
-    // Post submission handler
     const handlePostSubmit = async (title: string, context: string) => {
         try {
+            const authInstance = getAuth(); // Retrieve current auth state
+            const currentUser = authInstance.currentUser;
+
+            if (!currentUser) {
+                console.error('User not authenticated');
+                return;
+            }
+
             await addDoc(collection(db, 'posts'), {
                 title,
                 context,
                 createdAt: new Date(),
-                createdBy: auth.currentUser?.displayName,
-                userId: auth.currentUser?.uid,
-                likes: 0, // Initialize likes to 0
+                createdBy: currentUser.displayName,
+                userId: currentUser.uid,
+                likes: 0,
             });
         } catch (error) {
             console.error('Error adding post: ', error);
         }
     };
 
-    // Like handler
     const handleLikeClick = async (postId: string) => {
         const post = posts.find((p) => p.id === postId);
         if (!post) return;
@@ -105,10 +139,9 @@ const HomePage: React.FC = () => {
         const postRef = doc(db, 'posts', postId);
         try {
             await updateDoc(postRef, {
-                likes: post.likes + 1, // Increment the likes in Firestore
+                likes: post.likes + 1,
             });
 
-            // Update local state with the new like count
             setPosts((prevPosts) =>
                 prevPosts.map((p) =>
                     p.id === postId ? {...p, likes: p.likes + 1} : p,
@@ -119,19 +152,24 @@ const HomePage: React.FC = () => {
         }
     };
 
-    // Placeholder for reply click handler
     const handleReplyClick = (postId: string) => {
         console.log('Reply clicked for post:', postId);
     };
 
-    // Placeholder for copy click handler
     const handleCopyClick = (postId: string) => {
         console.log('Copy link clicked for post:', postId);
     };
 
     return (
         <div>
-            {/* Greeting based on user */}
+            <header className='flex justify-between items-center p-4'>
+                <NavigationMenuDemo />
+                <div className='text-white font-bold text-lg'></div>
+                <div className='flex items-center'>
+                    <AvatarDemo />
+                </div>
+            </header>
+
             <header className='mb-4'>
                 <h1 className='text-2xl font-bold'>
                     {userName
@@ -140,20 +178,18 @@ const HomePage: React.FC = () => {
                 </h1>
             </header>
 
-            {/* Post submission form */}
             <PostForm onSubmit={handlePostSubmit} />
 
-            {/* Loader when data is loading */}
             {loading ? (
-                <div className='text-center'>
-                    <Progress value={50} />
-                </div>
+                <div className='text-center'></div>
             ) : (
                 <PostList
                     posts={posts}
                     onLikeClick={handleLikeClick}
                     onReplyClick={handleReplyClick}
                     onCopyClick={handleCopyClick}
+                    onDeleteClick={handleDeletePost} // Pass the delete handler
+                    currentUserId={currentUserId}
                 />
             )}
         </div>

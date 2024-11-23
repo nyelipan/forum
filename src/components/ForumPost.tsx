@@ -19,8 +19,13 @@ const ForumPost: React.FC<ForumPostProps> = ({
     const currentUser = auth.currentUser;
 
     const handleDeleteClick = async () => {
-        await handleDeletePost(postId); // Delete the post from Firestore
-        onDelete(postId); // Update the UI by removing the post
+        try {
+            await handleDeletePost(postId); // Delete the post from Firestore
+            onDelete(postId);
+        } catch (error) {
+            console.error('Error deleting post: ', error);
+        }
+        // Update the UI by removing the post
     };
 
     return (

@@ -74,6 +74,7 @@ const RepliesList: React.FC<RepliesListProps> = ({
                                     : 'Unknown'}
                             </span>
                         </small>
+
                         {(currentUserId === reply.creatorId ||
                             currentUserId === postAuthorId) && (
                             <Button

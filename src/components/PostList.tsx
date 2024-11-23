@@ -1,6 +1,7 @@
+import { User } from 'lucide-react';
 import React, { useState } from 'react';
-import { AiOutlineCopy, AiOutlineLike } from 'react-icons/ai'; // Ensure correct icon import
-import { FaReply } from 'react-icons/fa';
+import { AiOutlineCopy, AiOutlineLike } from 'react-icons/ai';
+import { FaHandMiddleFinger, FaReply, FaTrash } from 'react-icons/fa';
 
 import { Progress } from '@radix-ui/react-progress';
 
@@ -8,7 +9,7 @@ interface Reply {
     id: string;
     content: string;
     createdBy: string;
-    createdAt: any; // Timestamp
+    createdAt: any;
 }
 
 interface Post {
@@ -16,55 +17,44 @@ interface Post {
     title: string;
     context: string;
     createdBy: string;
-    createdAt: any; // Timestamp
+    createdAt: any; // Keeping it as 'any' because of Firebase timestamp, but consider using a better type
     likes: number;
-    replies: Reply[]; // Added replies to the post
+    replies: Reply[];
+    userId: string; // To check if the post belongs to the current user
 }
 
 interface PostListProps {
     posts: Post[];
     onLikeClick: (postId: string) => void;
+    onReplyClick: (postId: string, replyContent: string) => void;
+    onCopyClick: (postId: string) => void;
+    onDeleteClick: (postId: string) => void;
+    currentUserId: string | null; // User ID for the logged-in user
 }
 
-const PostList: React.FC<PostListProps> = ({posts, onLikeClick}) => {
-    const [likedPosts, setLikedPosts] = useState<string[]>([]);
-    const [replyText, setReplyText] = useState<string>('');
-    const [replies, setReplies] = useState<{[key: string]: string}>({}); // State to handle replies for each post
+const PostList: React.FC<PostListProps> = ({
+    posts,
+    onLikeClick,
+    onReplyClick,
+    onCopyClick,
+    onDeleteClick,
+    currentUserId,
+}) => {
+    const [replyText, setReplyText] = useState<{[key: string]: string}>({}); // Store reply text per post
 
-    const handleLikeClick = (postId: string) => {
-        if (likedPosts.includes(postId)) {
-            setLikedPosts(likedPosts.filter((id) => id !== postId));
-        } else {
-            setLikedPosts([...likedPosts, postId]);
-        }
+    // Handle reply text change for each post
+    const handleReplyChange = (postId: string, value: string) => {
+        setReplyText((prev) => ({
+            ...prev,
+            [postId]: value,
+        }));
     };
 
-    const handleCopyClick = (text: string) => {
-        navigator.clipboard.writeText(text).then(() => {
-            alert('Text copied to clipboard!');
-        });
-    };
-
+    // Handle reply submission
     const handleReplyClick = (postId: string) => {
-        // Add the reply to the list of replies for that specific post
-        if (replyText.trim() === '') return; // Ignore empty replies
-
-        const newReply = {
-            id: Math.random().toString(36).substr(2, 9), // Generate random id for the reply
-            content: replyText,
-            createdBy: 'User', // Replace with the actual user
-            createdAt: new Date(),
-        };
-
-        setReplies((prevReplies) => {
-            const updatedReplies = {
-                ...prevReplies,
-                [postId]: [...(prevReplies[postId] || []), newReply],
-            };
-            return updatedReplies;
-        });
-
-        setReplyText(''); // Reset reply text after submission
+        if (!replyText[postId]?.trim()) return; // Ignore empty replies
+        onReplyClick(postId, replyText[postId]);
+        setReplyText((prev) => ({...prev, [postId]: ''})); // Clear reply input after submission
     };
 
     return (
@@ -85,31 +75,43 @@ const PostList: React.FC<PostListProps> = ({posts, onLikeClick}) => {
                     </p>
 
                     <div className='flex gap-4 mt-2'>
-                        {/* Like/Unlike Button */}
+                        {/* Like Button */}
                         <button
-                            onClick={() => handleLikeClick(post.id)}
+                            onClick={() => onLikeClick(post.id)}
                             className='flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-md'
                         >
                             <AiOutlineLike />
-
-                            {likedPosts.includes(post.id) ? 'Unlike' : 'Like'}
+                            {post.likes === 0 ? 'Like' : 'Unlike'}
                         </button>
 
                         {/* Copy Button */}
                         <button
-                            onClick={() => handleCopyClick(post.context)}
-                            className='flex items-center gap-2 bg-stone-700 hover:bg-teal-700 text-white px-4 py-2 rounded-md'
+                            onClick={() => onCopyClick(post.id)}
+                            className='flex items-center gap-2 bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded-md'
                         >
                             <AiOutlineCopy />
                             Copy
                         </button>
+
+                        {/* Delete Button - Only show if current user is the owner */}
+                        {currentUserId === post.userId && (
+                            <button
+                                onClick={() => onDeleteClick(post.id)}
+                                className='flex items-center gap-2 bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md'
+                            >
+                                <FaTrash />
+                                Delete
+                            </button>
+                        )}
                     </div>
 
                     {/* Reply Form */}
                     <div className='mt-4'>
                         <textarea
-                            value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
+                            value={replyText[post.id] || ''} // Ensure the reply input is unique per post
+                            onChange={(e) =>
+                                handleReplyChange(post.id, e.target.value)
+                            }
                             className='w-full p-2 border rounded-md'
                             placeholder='Write a reply...'
                         />
@@ -117,16 +119,15 @@ const PostList: React.FC<PostListProps> = ({posts, onLikeClick}) => {
                             onClick={() => handleReplyClick(post.id)}
                             className='flex items-center gap-2 bg-emerald-700 hover:bg-green-600 text-white px-4 py-1 rounded-md'
                         >
-                            <FaReply />
+                            <FaHandMiddleFinger />
                             Reply
-                            <Progress value={33} />
                         </button>
                     </div>
 
                     {/* Reply List */}
                     <div className='mt-4'>
-                        {replies[post.id]?.length > 0 ? (
-                            replies[post.id].map((reply: Reply) => (
+                        {(post.replies?.length ?? 0) > 0 ? (
+                            post.replies.map((reply) => (
                                 <div
                                     key={reply.id}
                                     className='border p-2 rounded-md mt-2'

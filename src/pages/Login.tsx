@@ -1,4 +1,4 @@
-import './ui/login.css';
+import '../components/ui/login.css';
 
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { Checkbox } from '@/components/ui/checkbox';
 
+import { Button } from '../components/ui/button';
 import { auth } from '../firebase';
-import { Button } from './ui/button';
 
 interface LoginProps {
     onLogin: () => void;
@@ -50,7 +50,7 @@ const Login: React.FC<LoginProps> = () => {
                         <input
                             type='email'
                             placeholder='Email'
-                            className='mt-1 block w-full p-3 border border-grey-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-grey-600 dark:text-white'
+                            className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
@@ -63,7 +63,7 @@ const Login: React.FC<LoginProps> = () => {
                         <input
                             type='password'
                             placeholder='Password'
-                            className='mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white'
+                            className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />

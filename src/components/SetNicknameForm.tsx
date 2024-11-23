@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { auth } from '../firebase'; // Make sure this import is correct
-import HomePage from './HomePage';
+import HomePage from '../pages/HomePage';
 
 const SetNicknameForm = () => {
     const [nickname, setNickname] = useState('');
