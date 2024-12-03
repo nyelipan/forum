@@ -10,13 +10,13 @@ import {
 
 import { ThemeProvider } from '@/components/theme-provider'; // Assuming this is the correct path
 
-import Biodata from './components/Biodata';
-import ForumList from './components/ForumList';
 import { ModeToggle } from './components/mode-toggle';
 import SetNicknameForm from './components/SetNicknameForm';
 import { auth } from './firebase'; // Ensure you're importing auth
+import Biodata from './pages/Biodata';
 import HomePage from './pages/HomePage';
 import Login from './pages/Login';
+import Settings from './pages/Settings';
 import SignUp from './pages/SignUp';
 
 const LoginPage = () => {
@@ -46,6 +46,7 @@ const App = () => {
                     <Route path='/signup' element={<SignUp />} />
                     <Route path='/home' element={<HomePage />} />
                     <Route path='/nickname' element={<SetNicknameForm />} />
+                    <Route path='/settings' element={<Settings />} />
                     <Route path='/Biodata' element={<Biodata />} />
                 </Routes>
             </Router>

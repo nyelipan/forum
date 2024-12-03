@@ -3,7 +3,7 @@ import React from 'react';
 import { AiOutlineCopy, AiOutlineLike } from 'react-icons/ai';
 import { FaReply, FaTrash } from 'react-icons/fa';
 
-import { Button } from './ui/button'; // Ensure this is the correct path
+import { Button } from '../ui/button'; // Ensure this is the correct path
 
 interface PostItemProps {
     postId: string;

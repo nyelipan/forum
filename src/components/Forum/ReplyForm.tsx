@@ -1,7 +1,7 @@
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { useState } from 'react';
 
-import { auth, db } from '../firebase';
+import { auth, db } from '../../firebase';
 
 interface ReplyFormProps {
     postId: string;

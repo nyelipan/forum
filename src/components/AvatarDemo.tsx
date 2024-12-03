@@ -41,6 +41,9 @@ const AvatarDemo = () => {
                 <DropdownMenuItem onClick={() => navigate('/Biodata')}>
                     Profile
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/settings')}>
+                    Settings
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={(handleLogout) => navigate('/')}>
                     Logout
                 </DropdownMenuItem>

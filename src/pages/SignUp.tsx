@@ -1,13 +1,14 @@
 import '../components/ui/signup.css';
 
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore'; // Import Firestore functions
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button } from '../components/ui/button';
 import Header from '../components/ui/Header';
 import { Input } from '../components/ui/input';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase'; // Make sure Firestore db is imported
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
@@ -15,6 +16,7 @@ const SignUp = () => {
     const [nickname, setNickname] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+
     const handleSignUp = async () => {
         try {
             const userCredential = await createUserWithEmailAndPassword(
@@ -27,6 +29,14 @@ const SignUp = () => {
             // Correctly update the displayName
             await updateProfile(user, {
                 displayName: nickname, // Use updateProfile from Firebase Auth
+            });
+
+            // Store user data in Firestore
+            await setDoc(doc(db, 'users', user.uid), {
+                uid: user.uid,
+                email: user.email,
+                nickname: nickname, // Store the user's nickname
+                createdAt: new Date(), // You can also store when the account was created
             });
 
             navigate('/home');

@@ -13,7 +13,7 @@ interface LoginProps {
     onLogin: () => void;
 }
 
-// Example using a dark mode toggle (pseudo-code)
+// Toggle dark mode class on body
 const toggleDarkMode = () => {
     document.body.classList.toggle('dark-mode');
 };
@@ -22,16 +22,33 @@ const Login: React.FC<LoginProps> = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [rememberMe, setRememberMe] = useState(false); // Remember Me state
     const navigate = useNavigate();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Basic validation
+        if (!email || !password) {
+            setError('Please enter both email and password.');
+            return;
+        }
+
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            // Trigger the onLogin event
+
+            if (rememberMe) {
+                // Optional: Set persistence for "Remember Me" (e.g., local persistence)
+                // auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            }
+
             navigate('/home'); // Redirect to the home page after successful login
-        } catch (err) {
-            setError('Failed to log in. Please check your credentials.');
+        } catch (err: any) {
+            // Catch specific Firebase Auth errors
+            const errorMessage =
+                err.message ||
+                'Failed to log in. Please check your credentials.';
+            setError(errorMessage);
         }
     };
 
@@ -43,6 +60,8 @@ const Login: React.FC<LoginProps> = () => {
                     {error && (
                         <p className='text-red-500 text-center'>{error}</p>
                     )}
+
+                    {/* Email Input */}
                     <div>
                         <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
                             Email
@@ -56,6 +75,7 @@ const Login: React.FC<LoginProps> = () => {
                         />
                     </div>
 
+                    {/* Password Input */}
                     <div>
                         <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
                             Password
@@ -69,11 +89,29 @@ const Login: React.FC<LoginProps> = () => {
                         />
                     </div>
 
+                    {/* Remember Me Checkbox */}
+                    <div className='flex items-center'>
+                        <Checkbox
+                            id='remember-me'
+                            onCheckedChange={(checked) =>
+                                setRememberMe(!!checked)
+                            }
+                        />
+                        <label
+                            htmlFor='remember-me'
+                            className='ml-2 block text-sm text-gray-900 dark:text-gray-300'
+                        >
+                            Remember Me
+                        </label>
+                    </div>
+
+                    {/* Login Button */}
                     <Button type='submit' className='login-button'>
                         Login
                     </Button>
                 </form>
 
+                {/* Signup Redirect */}
                 <p className='text-center text-sm text-gray-600 dark:text-gray-400'>
                     Don't have an account?
                 </p>

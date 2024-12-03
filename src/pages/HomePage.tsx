@@ -11,17 +11,16 @@ import {
 	updateDoc,
 } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
-import { Progress } from '@/components/ui/progress';
+import { CarouselDemo } from '@/components/CarouselDemo';
+import Header from '@/components/ui/Header';
 
 import AvatarDemo from '../components/AvatarDemo';
-import PostForm from '../components/PostForm';
-import PostList from '../components/PostList';
-import RepliesList from '../components/RepliesList';
-import ReplyForm from '../components/ReplyForm';
+import PostForm from '../components/Forum/PostForm';
+import PostList from '../components/Forum/PostList';
 import { NavigationMenuDemo } from '../components/ui/NavigationMenuDemo';
-import { auth, db } from '../firebase'; // Ensure these are correctly configured
+import { auth, db } from '../firebase';
 
 interface Post {
     id: string;
@@ -31,6 +30,7 @@ interface Post {
     createdBy: string;
     userId: string;
     likes: number;
+    replies: Reply[];
 }
 
 interface Reply {
@@ -51,15 +51,10 @@ const HomePage: React.FC = () => {
 
     const handleDeletePost = async (postId: string) => {
         try {
-            // Delete post from Firestore
-            await deleteDoc(doc(db, 'posts', postId));
-
-            // Update local state to remove the deleted post
-            setPosts((prevPosts) =>
-                prevPosts.filter((post) => post.id !== postId),
-            );
+            const postRef = doc(db, 'posts', postId);
+            await deleteDoc(postRef);
         } catch (error) {
-            console.error('Error deleting post: ', error);
+            console.error('Error deleting post:', error);
         }
     };
 
@@ -77,7 +72,6 @@ const HomePage: React.FC = () => {
                 const repliesSnapshot = await getDocs(
                     collection(db, 'posts', postId, 'replies'),
                 );
-
                 const repliesList = repliesSnapshot.docs.map(
                     (doc) => doc.data() as Reply,
                 );
@@ -90,8 +84,7 @@ const HomePage: React.FC = () => {
             setLoading(false);
         });
 
-        // Handle auth state change
-        const authInstance = getAuth(); // Use this auth instance consistently
+        const authInstance = getAuth();
         const unsubscribeAuth = onAuthStateChanged(authInstance, (user) => {
             if (user) {
                 setUserName(user.displayName || user.email);
@@ -102,16 +95,15 @@ const HomePage: React.FC = () => {
             }
         });
 
-        // Cleanup subscriptions on unmount
         return () => {
-            unsubscribePosts(); // Unsubscribe from Firestore updates
-            unsubscribeAuth(); // Unsubscribe from auth listener
+            unsubscribePosts();
+            unsubscribeAuth();
         };
-    }, []); // Empty dependency array so the effect runs once
+    }, []);
 
     const handlePostSubmit = async (title: string, context: string) => {
         try {
-            const authInstance = getAuth(); // Retrieve current auth state
+            const authInstance = getAuth();
             const currentUser = authInstance.currentUser;
 
             if (!currentUser) {
@@ -152,8 +144,45 @@ const HomePage: React.FC = () => {
         }
     };
 
-    const handleReplyClick = (postId: string) => {
-        console.log('Reply clicked for post:', postId);
+    const handleReplyClick = async (postId: string, replyContent: string) => {
+        try {
+            const authInstance = getAuth();
+            const currentUser = authInstance.currentUser;
+
+            if (!currentUser) {
+                console.error('User not authenticated');
+                return;
+            }
+
+            const newReply = {
+                content: replyContent,
+                createdAt: new Date(),
+                creatorId: currentUser.uid,
+                userEmail: currentUser.email,
+            };
+
+            await addDoc(collection(db, 'posts', postId, 'replies'), newReply);
+
+            setReplies((prevReplies) => ({
+                ...prevReplies,
+                [postId]: [...(prevReplies[postId] || []), newReply],
+            }));
+        } catch (error) {
+            console.error('Error adding reply: ', error);
+        }
+    };
+
+    const handleDeleteReply = async (postId: string, replyId: string) => {
+        try {
+            await deleteDoc(doc(db, 'posts', postId, 'replies', replyId));
+            setReplies((prevReplies) => {
+                const updatedReplies = {...prevReplies};
+                delete updatedReplies[postId];
+                return updatedReplies;
+            });
+        } catch (error) {
+            console.error('Error deleting reply: ', error);
+        }
     };
 
     const handleCopyClick = (postId: string) => {
@@ -162,34 +191,58 @@ const HomePage: React.FC = () => {
 
     return (
         <div>
-            <header className='flex justify-between items-center p-4'>
-                <NavigationMenuDemo />
-                <div className='text-white font-bold text-lg'></div>
+            {/* Header Section with logo and navigation */}
+            <header className='flex justify-between items-center p-1 bg-gray-800 shadow-lg'>
+                {/* Logo Section */}
                 <div className='flex items-center'>
-                    <AvatarDemo />
+                    <Link to='/home'>
+                        <img
+                            src='/public/images/logo.png'
+                            alt='Logo'
+                            className='w-59 h-40 mr-4'
+                        />{' '}
+                    </Link>
+                </div>
+
+                {/* User Greeting */}
+                <div className='text-right flex items-center space-x-4'>
+                    <div className=' mr-5 text-black text-xl font-bold '>
+                        {userName
+                            ? `Welcome, ${userName}!`
+                            : 'Welcome to the Forum!'}
+                    </div>
+
+                    {/* Avatar */}
+                    <div className=' flex items-left '>
+                        <AvatarDemo />
+                    </div>
                 </div>
             </header>
-
-            <header className='mb-4'>
-                <h1 className='text-2xl font-bold'>
-                    {userName
-                        ? `Welcome, ${userName}!`
-                        : 'Welcome to the Forum!'}
-                </h1>
-            </header>
-
+            <div>
+                <NavigationMenuDemo />
+            </div>
+            <div className='flex items-center z-10'>
+                {/* Center the Carousel */}
+                <div className='flex justify-center w-full'>
+                    <CarouselDemo />
+                </div>
+            </div>
+            {/* Post Form Component */}
             <PostForm onSubmit={handlePostSubmit} />
 
+            {/* Loading State */}
             {loading ? (
-                <div className='text-center'></div>
+                <div className='text-center text-gray-600'>Loading...</div>
             ) : (
                 <PostList
                     posts={posts}
                     onLikeClick={handleLikeClick}
                     onReplyClick={handleReplyClick}
+                    onDeleteClick={handleDeletePost}
                     onCopyClick={handleCopyClick}
-                    onDeleteClick={handleDeletePost} // Pass the delete handler
+                    handleDeleteReply={handleDeleteReply}
                     currentUserId={currentUserId}
+                    replies={replies}
                 />
             )}
         </div>
