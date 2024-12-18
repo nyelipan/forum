@@ -1,0 +1,32 @@
+.theme-toggle-wrapper {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1000;
+}
+/* Sticky container for the toggle button */
+.theme-toggle-container {
+    position: fixed; /* Keeps the button fixed while scrolling */
+    top: 20px; /* Adjust the distance from the top */
+    left: 20px; /* Adjust the distance from the left */
+    z-index: 1000; /* Ensure it is above other content */
+    padding: 10px;
+    background-color: var(
+        --panel-background-color
+    ); /* Background depending on theme */
+    border: 2px solid var(--panel-border-color); /* Border depending on theme */
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Optional shadow */
+}
+
+/* When in dark mode */
+html.dark .theme-toggle-container {
+    background-color: #333;
+    border-color: #555;
+}
+
+/* When in light mode */
+html.light .theme-toggle-container {
+    background-color: #f9f9f9;
+    border-color: #ddd;
+}

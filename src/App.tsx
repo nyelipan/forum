@@ -1,6 +1,7 @@
+import './App.css';
+
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import path from 'path';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
 	BrowserRouter as Router,
 	Route,
@@ -8,7 +9,7 @@ import {
 	useNavigate,
 } from 'react-router-dom';
 
-import { ThemeProvider } from '@/components/theme-provider'; // Assuming this is the correct path
+import { ThemeProvider } from '@/components/theme-provider'; // Adjust the import path as necessary
 
 import { ModeToggle } from './components/mode-toggle';
 import SetNicknameForm from './components/SetNicknameForm';
@@ -18,6 +19,7 @@ import HomePage from './pages/HomePage';
 import Login from './pages/Login';
 import Settings from './pages/Settings';
 import SignUp from './pages/SignUp';
+import Sidebar from './Sidebar/Sidebar';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -35,22 +37,69 @@ const LoginPage = () => {
 };
 
 const App = () => {
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            setIsAuthenticated(!!user);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
     return (
-        <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
-            <Router>
-                <div className='theme-toggle-container'>
-                    <ModeToggle />
+        <Router>
+            <ThemeProvider defaultTheme='system' storageKey='vite-ui-theme'>
+                <div className='flex'>
+                    <div className='main-content'>
+                        <Routes>
+                            <Route path='/' element={<LoginPage />} />
+                            <Route path='/signup' element={<SignUp />} />
+                            <Route
+                                path='/home'
+                                element={
+                                    isAuthenticated ? (
+                                        <HomePage />
+                                    ) : (
+                                        <LoginPage />
+                                    )
+                                }
+                            />
+                            <Route
+                                path='/nickname'
+                                element={
+                                    isAuthenticated ? (
+                                        <SetNicknameForm />
+                                    ) : (
+                                        <LoginPage />
+                                    )
+                                }
+                            />
+                            <Route
+                                path='/settings'
+                                element={
+                                    isAuthenticated ? (
+                                        <Settings />
+                                    ) : (
+                                        <LoginPage />
+                                    )
+                                }
+                            />
+                            <Route
+                                path='/biodata'
+                                element={
+                                    isAuthenticated ? (
+                                        <Biodata />
+                                    ) : (
+                                        <LoginPage />
+                                    )
+                                }
+                            />
+                        </Routes>
+                    </div>
                 </div>
-                <Routes>
-                    <Route path='/' element={<LoginPage />} />
-                    <Route path='/signup' element={<SignUp />} />
-                    <Route path='/home' element={<HomePage />} />
-                    <Route path='/nickname' element={<SetNicknameForm />} />
-                    <Route path='/settings' element={<Settings />} />
-                    <Route path='/Biodata' element={<Biodata />} />
-                </Routes>
-            </Router>
-        </ThemeProvider>
+            </ThemeProvider>
+        </Router>
     );
 };
 

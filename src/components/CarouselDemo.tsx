@@ -36,7 +36,7 @@ export function CarouselDemo() {
     ];
 
     return (
-        <Carousel className='w-full max-w-md'>
+        <Carousel className='w-full max-w-sm'>
             <CarouselContent>
                 {images.map((image, index) => (
                     <CarouselItem key={index}>

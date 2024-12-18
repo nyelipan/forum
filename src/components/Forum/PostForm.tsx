@@ -62,7 +62,7 @@ const PostForm: React.FC<PostFormProps> = ({onSubmit}) => {
             {/* Button to toggle form visibility */}
             <button
                 onClick={() => setIsFormVisible(!isFormVisible)}
-                className='w-full bg-indigo-800 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4 transition-all duration-300 ease-in-out transform hover:scale-105'
+                className='w-full bg-gray-800 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4 transition-all duration-300 ease-in-out transform hover:scale-105'
             >
                 {isFormVisible ? 'Hide Post Form' : 'Show Post Form'}
             </button>

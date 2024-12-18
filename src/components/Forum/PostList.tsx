@@ -1,3 +1,5 @@
+import '../ui/PostList.css';
+
 import React, { useState } from 'react';
 
 import { Button } from '../ui/button';
@@ -17,7 +19,7 @@ interface Post {
     title: string;
     context: string;
     createdBy: string;
-    createdAt: Date; // Firebase timestamp
+    createdAt: {seconds: number}; // Firebase timestamp
     likes: number;
     replies: Reply[];
     userId: string; // To check if the post belongs to the current user
@@ -65,16 +67,30 @@ const PostList: React.FC<PostListProps> = ({
                 posts.map((post) => (
                     <div
                         key={post.id}
-                        className='bg-dark dark:bg-gray-900 p-6 rounded-lg shadow-lg'
+                        className='post-item bg-dark dark:bg-gray-900 p-6 rounded-lg shadow-lg'
                     >
                         {/* Post Title */}
-                        <h2 className='text-3xl font-bold text-indigo-700 dark:text-indigo-700'>
+                        <h2 className='text-3xl font-bold text-white-700 dark:text-indigo-700'>
                             {post.title}
                         </h2>
+
                         {/* Post Context */}
                         <p className='text-white-600 dark:text-gray-300 mt-2'>
                             {post.context}
                         </p>
+
+                        {/* Post Details */}
+                        <small className='flex justify-between text-grey-600 dark:text-indigo-400 mt-2'>
+                            <span>Posted by: {post.createdBy}</span>
+                            <span>
+                                Posted on:{' '}
+                                {post.createdAt
+                                    ? new Date(
+                                          post.createdAt.seconds * 1000,
+                                      ).toLocaleString()
+                                    : 'Unknown'}
+                            </span>
+                        </small>
 
                         <div className='mt-4 flex justify-between items-center'>
                             <div className='flex items-center'>

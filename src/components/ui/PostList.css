@@ -1,0 +1,18 @@
+.reply-wrapper {
+    padding-left: 0;
+}
+
+.reply-item {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #eaeaea;
+}
+
+.reply-content {
+    color: #333;
+}
+
+/* Indentation for nested replies */
+.reply-item .reply-item {
+    margin-left: 20px; /* Adjust for nested replies */
+}

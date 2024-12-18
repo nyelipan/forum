@@ -1,24 +1,31 @@
+import '../ui/PostList.css';
+
 import {
+	addDoc,
 	collection,
 	deleteDoc,
 	doc,
+	increment,
 	onSnapshot,
 	orderBy,
 	query,
+	serverTimestamp,
+	updateDoc,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { FaTrash } from 'react-icons/fa';
+import { FaThumbsUp, FaTrash } from 'react-icons/fa';
 
 import { db } from '../../firebase';
 import { Button } from '../ui/button';
 
-// Define Reply interface here
 interface Reply {
     id: string;
     content: string;
     userEmail: string;
     createdAt?: {seconds: number};
     creatorId: string;
+    likes: number;
+    replies?: Reply[]; // Nested replies
 }
 
 interface RepliesListProps {
@@ -35,6 +42,7 @@ const RepliesList: React.FC<RepliesListProps> = ({
     handleDeleteReply,
 }) => {
     const [replies, setReplies] = useState<Reply[]>([]);
+    const [replyText, setReplyText] = useState<{[key: string]: string}>({});
 
     useEffect(() => {
         const repliesQuery = query(
@@ -44,14 +52,16 @@ const RepliesList: React.FC<RepliesListProps> = ({
 
         const unsubscribe = onSnapshot(repliesQuery, (snapshot) => {
             const repliesData = snapshot.docs.map((doc) => {
-                const data = doc.data(); // Get raw data from Firestore document
+                const data = doc.data();
                 return {
                     id: doc.id,
                     content: data.content,
                     userEmail: data.userEmail,
-                    createdAt: data.createdAt, // Ensure createdAt is handled correctly
+                    createdAt: data.createdAt,
                     creatorId: data.creatorId,
-                } as Reply; // Explicitly type it as a Reply
+                    likes: data.likes || 0, // Initialize likes if not present
+                    replies: data.replies || [], // Initialize replies if not present
+                } as Reply;
             });
             setReplies(repliesData);
         });
@@ -63,9 +73,40 @@ const RepliesList: React.FC<RepliesListProps> = ({
         return new Date(seconds * 1000).toLocaleString();
     };
 
+    const handleLikeClick = async (replyId: string) => {
+        const replyDocRef = doc(db, 'posts', postId, 'replies', replyId);
+        await updateDoc(replyDocRef, {
+            likes: increment(1),
+        });
+    };
+
+    const handleReplySubmit = async (
+        parentReplyId: string,
+        content: string,
+    ) => {
+        if (!content.trim()) return;
+
+        const parentReplyDocRef = doc(
+            db,
+            'posts',
+            postId,
+            'replies',
+            parentReplyId,
+        );
+        const newReply = {
+            content,
+            userEmail: currentUserId || 'Anonymous',
+            creatorId: currentUserId || 'Anonymous',
+            createdAt: serverTimestamp(),
+            likes: 0,
+        };
+
+        await addDoc(collection(parentReplyDocRef, 'replies'), newReply); // Add the new reply under the parent reply
+        setReplyText((prev) => ({...prev, [parentReplyId]: ''})); // Clear reply input
+    };
+
     const handleDeleteClick = async (postId: string, replyId: string) => {
         try {
-            // Delete the reply document from Firestore
             const replyDocRef = doc(db, 'posts', postId, 'replies', replyId);
             await deleteDoc(replyDocRef);
             console.log(`Reply ${replyId} deleted successfully`);
@@ -74,39 +115,83 @@ const RepliesList: React.FC<RepliesListProps> = ({
         }
     };
 
+    const handleReplyChange = (replyId: string, value: string) => {
+        setReplyText((prev) => ({
+            ...prev,
+            [replyId]: value,
+        }));
+    };
+
+    const renderReplies = (replies: Reply[], level: number = 1) => {
+        return replies.map((reply) => (
+            <div key={reply.id} className={`reply-item pl-${level * 4}`}>
+                <p className='reply-content'>{reply.content}</p>
+                <small className='flex justify-between text-gray-500 mt-1'>
+                    <span>Replied by: {reply.userEmail}</span>
+                    <span>
+                        Replied on:{' '}
+                        {reply.createdAt
+                            ? formatDate(reply.createdAt.seconds)
+                            : 'Unknown'}
+                    </span>
+                </small>
+
+                {/* Like and Reply Buttons */}
+                <div className='mt-2 flex items-center space-x-4'>
+                    <Button onClick={() => handleLikeClick(reply.id)}>
+                        <FaThumbsUp /> {reply.likes}
+                    </Button>
+
+                    <Button
+                        onClick={() =>
+                            handleReplySubmit(
+                                reply.id,
+                                replyText[reply.id] || '',
+                            )
+                        }
+                    >
+                        Reply
+                    </Button>
+
+                    {(currentUserId === reply.creatorId ||
+                        currentUserId === postAuthorId) && (
+                        <Button
+                            className='text-red-500 hover:text-red-700 mt-2'
+                            onClick={() => handleDeleteClick(postId, reply.id)}
+                        >
+                            <FaTrash className='inline' /> Delete
+                        </Button>
+                    )}
+                </div>
+
+                {/* Input for reply to reply */}
+                <div className='mt-2'>
+                    <textarea
+                        value={replyText[reply.id] || ''}
+                        onChange={(e) =>
+                            handleReplyChange(reply.id, e.target.value)
+                        }
+                        placeholder='Write your reply...'
+                        className='w-full p-2 border rounded bg-white text-black border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
+                    />
+                </div>
+
+                {/* Render nested replies recursively */}
+                {reply.replies && reply.replies.length > 0 && (
+                    <div className='mt-2'>
+                        {renderReplies(reply.replies, level + 1)}
+                    </div>
+                )}
+            </div>
+        ));
+    };
+
     return (
-        <div>
+        <div className='reply-wrapper'>
             {replies.length === 0 ? (
                 <p>No replies yet!</p>
             ) : (
-                replies.map((reply) => (
-                    <div key={reply.id} className='border-t pt-2 mt-2'>
-                        <p className='text-white-800 dark:text-gray-50'>
-                            {reply.content}
-                        </p>
-                        <small className='flex justify-between text-indigo-600 mt-1'>
-                            <span>Replied by: {reply.userEmail}</span>
-                            <span>
-                                Replied on:{' '}
-                                {reply.createdAt
-                                    ? formatDate(reply.createdAt.seconds)
-                                    : 'Unknown'}
-                            </span>
-                        </small>
-
-                        {(currentUserId === reply.creatorId ||
-                            currentUserId === postAuthorId) && (
-                            <Button
-                                className='text-red-500 hover:text-red-700 mt-2'
-                                onClick={() =>
-                                    handleDeleteClick(postId, reply.id)
-                                } // Call the handleDeleteClick function
-                            >
-                                <FaTrash className='inline' /> Delete
-                            </Button>
-                        )}
-                    </div>
-                ))
+                renderReplies(replies)
             )}
         </div>
     );

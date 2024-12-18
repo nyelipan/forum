@@ -14,13 +14,15 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { CarouselDemo } from '@/components/CarouselDemo';
-import Header from '@/components/ui/Header';
+import ParentComponent from '@/components/ParentComponent';
+import SearchBar from '@/components/ui/searchBar/searchBar';
+import Sidebar from '@/Sidebar/Sidebar';
 
 import AvatarDemo from '../components/AvatarDemo';
 import PostForm from '../components/Forum/PostForm';
 import PostList from '../components/Forum/PostList';
 import { NavigationMenuDemo } from '../components/ui/NavigationMenuDemo';
-import { auth, db } from '../firebase';
+import { db } from '../firebase';
 
 interface Post {
     id: string;
@@ -47,6 +49,8 @@ const HomePage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [userName, setUserName] = useState<string | null>(null);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
     const navigate = useNavigate();
 
     const handleDeletePost = async (postId: string) => {
@@ -190,62 +194,90 @@ const HomePage: React.FC = () => {
     };
 
     return (
-        <div>
-            {/* Header Section with logo and navigation */}
-            <header className='flex justify-between items-center p-1 bg-gray-800 shadow-lg'>
-                {/* Logo Section */}
-                <div className='flex items-center'>
-                    <Link to='/home'>
-                        <img
-                            src='/public/images/logo.png'
-                            alt='Logo'
-                            className='w-59 h-40 mr-4'
-                        />{' '}
-                    </Link>
-                </div>
-
-                {/* User Greeting */}
-                <div className='text-right flex items-center space-x-4'>
-                    <div className=' mr-5 text-black text-xl font-bold '>
-                        {userName
-                            ? `Welcome, ${userName}!`
-                            : 'Welcome to the Forum!'}
-                    </div>
-
-                    {/* Avatar */}
-                    <div className=' flex items-left '>
-                        <AvatarDemo />
-                    </div>
-                </div>
-            </header>
-            <div>
-                <NavigationMenuDemo />
-            </div>
-            <div className='flex items-center z-10'>
-                {/* Center the Carousel */}
-                <div className='flex justify-center w-full'>
-                    <CarouselDemo />
-                </div>
-            </div>
-            {/* Post Form Component */}
-            <PostForm onSubmit={handlePostSubmit} />
-
-            {/* Loading State */}
-            {loading ? (
-                <div className='text-center text-gray-600'>Loading...</div>
-            ) : (
-                <PostList
-                    posts={posts}
-                    onLikeClick={handleLikeClick}
-                    onReplyClick={handleReplyClick}
-                    onDeleteClick={handleDeletePost}
-                    onCopyClick={handleCopyClick}
-                    handleDeleteReply={handleDeleteReply}
-                    currentUserId={currentUserId}
-                    replies={replies}
+        <>
+            <div
+                className={`flex ${
+                    isSidebarOpen ? 'ml-[sidebar-width]' : 'ml-0'
+                } transition-all duration-300`}
+            >
+                {/* Sidebar Component */}
+                <Sidebar
+                    isOpen={isSidebarOpen}
+                    onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
                 />
-            )}
-        </div>
+                <main
+                    className={`
+                flex-1
+                ${isSidebarOpen ? 'w-[calc(100%-sidebar-width)]' : 'w-full'}
+                transition-all duration-300
+            `}
+                >
+                    <div className='mr-1'>
+                        {/* Header Section with logo and navigation */}
+                        <header className='flex justify-between items-center p- rounded-xl bg-gray-800 shadow-lg'>
+                            {/* Logo Section */}
+                            <div className='flex items-center'>
+                                <Link to='/home'>
+                                    <img
+                                        src='/images/logo.png'
+                                        alt='Logo'
+                                        className='w-59 h-40 mr-4'
+                                    />{' '}
+                                </Link>
+                            </div>
+
+                            {/* User Greeting */}
+                            <div className='text-right flex items-center space-x-1'>
+                                <div className=' mr-5 text-black text-xl font-bold '>
+                                    {userName
+                                        ? `Welcome, ${userName}!`
+                                        : 'Welcome to the Forum!'}
+                                    <div className='flex-center'>
+                                        <ParentComponent />
+                                    </div>
+                                </div>
+
+                                {/* Avatar */}
+                                <div className=' flex items-right '>
+                                    <AvatarDemo />
+                                </div>
+                            </div>
+                        </header>
+                        <div>
+                            <NavigationMenuDemo />
+                        </div>
+
+                        <div className='flex items-center z-10'>
+                            {/* Center the Carousel */}
+                            <div className='flex justify-center w-full'>
+                                <CarouselDemo />
+                            </div>
+                        </div>
+                        {/* Post Form Component */}
+                        <PostForm onSubmit={handlePostSubmit} />
+
+                        {/* Loading State */}
+                        <div className='post-wrapper'></div>
+                        {loading ? (
+                            <div className=' text-center text-gray-600'>
+                                Loading...
+                            </div>
+                        ) : (
+                            <PostList
+                                posts={posts}
+                                onLikeClick={handleLikeClick}
+                                onReplyClick={handleReplyClick}
+                                onDeleteClick={handleDeletePost}
+                                onCopyClick={handleCopyClick}
+                                handleDeleteReply={handleDeleteReply}
+                                currentUserId={currentUserId}
+                                replies={replies}
+                            />
+                        )}
+                    </div>
+                </main>
+            </div>
+        </>
     );
 };
 

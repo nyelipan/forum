@@ -1,23 +1,51 @@
-@layer base {
-    :root {
-        --sidebar-background: 0 0% 98%;
-        --sidebar-foreground: 240 5.3% 26.1%;
-        --sidebar-primary: 240 5.9% 10%;
-        --sidebar-primary-foreground: 0 0% 98%;
-        --sidebar-accent: 240 4.8% 95.9%;
-        --sidebar-accent-foreground: 240 5.9% 10%;
-        --sidebar-border: 220 13% 91%;
-        --sidebar-ring: 217.2 91.2% 59.8%;
-    }
+:root {
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+}
 
-    .dark {
-        --sidebar-background: 240 5.9% 10%;
-        --sidebar-foreground: 240 4.8% 95.9%;
-        --sidebar-primary: 224.3 76.3% 48%;
-        --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 240 3.7% 15.9%;
-        --sidebar-accent-foreground: 240 4.8% 95.9%;
-        --sidebar-border: 240 3.7% 15.9%;
-        --sidebar-ring: 217.2 91.2% 59.8%;
-    }
+.dark {
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+}
+
+.sidebar {
+    width: 250px; /* Fixed width for the sidebar */
+    background-color: #2c3e50; /* Dark background color */
+    color: white; /* Text color */
+    height: 100vh; /* Full height */
+    position: fixed; /* Fixed position */
+    top: 0; /* Align to the top */
+    left: 0; /* Align to the left */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5); /* Shadow effect */
+    transition: transform 0.3s ease; /* Smooth transition for effects */
+    z-index: 1000; /* Ensure it stays above other content */
+}
+/* App.css */
+.container {
+    display: flex; /* Use flexbox to align sidebar and main content */
+}
+
+.main-content {
+    margin-left: 240px; /* Leave space for the sidebar */
+    width: calc(100% - 250px); /* Full width minus sidebar width */
+    padding: 10px; /* Add some padding */
+    transition: margin-left 0.3s ease; /* Smooth transition for margin */
+}
+
+/* Adjust the main content width when the sidebar is closed */
+.sidebar.closed + .main-content {
+    margin-left: 0; /* Remove margin when sidebar is hidden */
+    width: 100%; /* Full width when sidebar is hidden */
 }

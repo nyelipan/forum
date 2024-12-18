@@ -1,86 +1,181 @@
-/* In your Login.css or in the CSS file for the component */
-
+/* Basic Styling */
 .login-container {
-    background-image: url('/images/login3.jpg');
-    background-size: cover; /* Ensure the image covers the entire container */
-    background-position: center; /* Center the background image */
-    min-height: 100vh; /* Make sure the container takes up the full height of the screen */
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 70vh;
+    background-color: var(--bg-color);
+    overflow: hidden;
 }
 
 .login-panel {
-    background-color: rgba(
-        134,
-        130,
-        121,
-        0.8
-    ); /* White background with some transparency */
-    padding: 60px;
-    border-radius: 60px;
-    box-shadow: 0px 4px 6px rgba(47, 36, 36, 0.1);
+    background-color: var(--panel-bg);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
     width: 100%;
-    max-width: 700px; /* You can set a max width for the login panel */
-}
-
-/* Additional styling for signup-h2 */
-.login-h2 {
     text-align: center;
-    margin-bottom: 20px;
-    font-style: inherit;
-    font-size: 2.5rem; /* Adjust the font size to make the heading larger */
-    font-weight: 600; /* Make the font bold for emphasis */
-    color: #161313; /* Dark text color for readability */
-    letter-spacing: 1px; /* Adds some space between letters for a cleaner look */
-    text-transform: uppercase; /* Make the text uppercase for a more prominent look */
-    border-bottom: 2px solid #09092e; /* A subtle bottom border in the same color as the button */
-    padding-bottom: 10px; /* Adds some space below the text for balance */
+    animation: fadeInUp 0.6s ease-out; /* Panel fade-in and move up animation */
+    border: 1px solid var(--border-color); /* Add border to panel */
 }
 
-input {
+/* Logo */
+.logo-container {
+    background: linear-gradient(to right, #3b82f6, #a855f7);
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    max-width: 300px;
+    max-height: 240px;
+
+    margin: 0 auto 1rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Form Elements */
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    text-align: left;
+}
+
+.input-field {
     width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #1f0a0a;
-    border-radius: 5px;
+    padding: 0.75rem;
+    border: 1px solid var(--input-border-color);
+    border-radius: 8px;
+    background-color: var(--input-bg);
+    color: var(--input-text-color);
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+.input-field:focus {
+    border-color: var(--focus-color);
+    outline: none;
+    box-shadow: 0 0 5px var(--focus-color);
+}
+
+/* Divider between Form Sections */
+.divider {
+    height: 1px;
+    background-color: var(--divider-color);
+    margin: 1.5rem 0;
+}
+
+/* Input focus effect */
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Remember Me */
+.remember-me-label {
+    color: var(--text-color);
+    margin-left: 0.5rem;
+    font-size: 0.875rem;
+    text-align: left;
+}
+
+/* Error Message */
+.error-message {
+    color: #e74c3c;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+/* Login Button */
 .login-button {
     width: 100%;
-    padding: 10px;
-    background-color: #3e3e48;
+    padding: 0.75rem;
+    background-color: var(--button-bg);
+    color: var(--button-text-color);
     border: none;
-    color: white;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
-}
-
-.Signup-button {
-    width: 100%;
-    padding: 10px;
-    background-color: #0d5064;
-    border: none;
-    color: rgb(255, 253, 253);
-    border-radius: 5px;
-    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .login-button:hover {
-    background-color: #7f91a4;
+    background-color: var(--button-hover-bg);
 }
 
-/* In Login.css */
-
-body.dark-mode .login-panel {
-    background-color: rgba(30, 30, 30, 0.7);
+/* Signup Text */
+.signup-text {
+    margin-top: 1rem;
+    color: var(--text-color);
 }
 
-body.dark-mode .login-h2 {
-    color: white;
+.signup-link {
+    color: var(--link-color);
+    cursor: pointer;
 }
 
-body.dark-mode input {
-    background-color: #2d2d2d;
-    color: white;
+.signup-link:hover {
+    text-decoration: underline;
+}
+
+/* Dark Mode */
+body.dark-mode {
+    --bg-color: #0b1a30;
+    --panel-bg: #142850;
+    --input-bg: #1c3355;
+    --input-text-color: #ffffff;
+    --text-color: #ffffff;
+    --border-color: #3b82f6;
+    --button-bg: #1c86ee;
+    --button-hover-bg: #1258a7;
+    --focus-color: #4da8da;
+    --link-color: #4da8da;
+    --divider-color: #3b82f6;
+}
+
+/* Light Mode */
+body.light-mode {
+    --bg-color: #f0f4f8;
+    --panel-bg: #ffffff;
+    --input-bg: #f7fafc;
+    --input-text-color: #333;
+    --text-color: #333;
+    --border-color: #3b82f6;
+    --button-bg: #3b82f6;
+    --button-hover-bg: #2563eb;
+    --focus-color: #3b82f6;
+    --link-color: #2563eb;
+    --divider-color: #3b82f6;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .login-panel {
+        padding: 1.5rem;
+        width: 90%;
+    }
+
+    .logo {
+        max-width: 80px;
+    }
 }

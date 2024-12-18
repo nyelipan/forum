@@ -1,20 +1,17 @@
+// Biodata.tsx (same as you provided earlier)
 import { updateProfile } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import React, { useEffect, useState } from 'react';
 
-import AvatarDemo from '@/components/AvatarDemo'; // Import the AvatarDemo component
-import { Button } from '@/components/ui/button'; // ShadCN Button component
-import {
-	Card,
-	CardContent,
-	CardFooter,
-	CardHeader,
-} from '@/components/ui/card'; // ShadCN Card components
-import { Input } from '@/components/ui/input'; // ShadCN Input component
-import { db, storage } from '@/firebase'; // Import Firebase Firestore and Storage
-import { useAuth } from '@/hooks/useAuth'; // Firebase auth hook for user authentication
-import { Label } from '@radix-ui/react-dropdown-menu'; // ShadCN Label component
+import AvatarDemo from '@/components/AvatarDemo';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { db, storage } from '@/firebase';
+import { useAuth } from '@/hooks/useAuth';
+import Sidebar from '@/Sidebar/Sidebar';
+import { Label } from '@radix-ui/react-dropdown-menu';
 
 const Biodata = () => {
     const user = useAuth();
@@ -23,11 +20,10 @@ const Biodata = () => {
         user ? user.displayName : '',
     );
     const [bio, setBio] = useState('');
-    const [avatar, setAvatar] = useState(user?.photoURL || ''); // Store current avatar URL
+    const [avatar, setAvatar] = useState(user?.photoURL || '');
     const [loading, setLoading] = useState(true);
-    const [imageFile, setImageFile] = useState(null); // Store the image file for upload
+    const [imageFile, setImageFile] = useState(null);
 
-    // Load user data from Firestore
     useEffect(() => {
         const loadUserData = async () => {
             if (user) {
@@ -36,7 +32,7 @@ const Biodata = () => {
                     const userData = userDoc.data();
                     setDisplayName(userData.displayName || user.displayName);
                     setBio(userData.bio || '');
-                    setAvatar(userData.avatar || user.photoURL); // Load avatar from Firestore
+                    setAvatar(userData.avatar || user.photoURL);
                 }
                 setLoading(false);
             }
@@ -45,7 +41,6 @@ const Biodata = () => {
         loadUserData();
     }, [user]);
 
-    // Handle profile picture upload
     const handleAvatarUpload = async () => {
         if (!imageFile) return;
 
@@ -54,7 +49,7 @@ const Biodata = () => {
 
         uploadTask.on(
             'state_changed',
-            (snapshot) => {},
+            () => {},
             (error) => {
                 console.error('Error uploading avatar: ', error);
             },
@@ -62,16 +57,11 @@ const Biodata = () => {
                 const downloadURL = await getDownloadURL(
                     uploadTask.snapshot.ref(),
                 );
-
                 await updateDoc(doc(db, 'users', user.uid), {
                     avatar: downloadURL,
                 });
-
-                await updateProfile(user, {
-                    photoURL: downloadURL,
-                });
-
-                setAvatar(downloadURL); // Set avatar in state to update UI
+                await updateProfile(user, {photoURL: downloadURL});
+                setAvatar(downloadURL);
             },
         );
     };
@@ -84,12 +74,8 @@ const Biodata = () => {
                     bio,
                     avatar,
                 });
-
-                await updateProfile(user, {
-                    displayName,
-                });
-
-                setEditMode(false); // Switch back to view mode
+                await updateProfile(user, {displayName});
+                setEditMode(false);
             } catch (error) {
                 console.error('Error updating profile: ', error);
             }
@@ -99,131 +85,101 @@ const Biodata = () => {
     if (loading) return <p>Loading...</p>;
 
     return (
-        <div className='w-full h-screen bg-gradient-to-b from-gray-100 to-gray-300'>
-            {/* Header with Logo and Avatar */}
-            <header className='flex justify-between items-center p-4 bg-gray-800 shadow-lg'>
-                <div className='text-white font-bold text-lg'>
-                    <a href='/home'>My Profile</a>
-                </div>
-                <AvatarDemo
-                    avatarUrl={avatar || 'https://via.placeholder.com/150'}
-                    onAvatarClick={handleAvatarUpload}
-                />
-            </header>
+        <>
+            <Sidebar />
+            <div className='w-full h-screen bg-gradient-to-b from-gray-100 to-gray-300'>
+                <header className='flex justify-between items-center p-4 bg-gray-800 shadow-lg'>
+                    <div className='text-white font-bold text-lg'>
+                        <a href='/home'>My Profile</a>
+                    </div>
+                    <AvatarDemo
+                        avatarUrl={avatar || 'https://via.placeholder.com/150'}
+                        onAvatarClick={handleAvatarUpload}
+                    />
+                </header>
 
-            {/* Main Content */}
-            <main className='p-4'>
-                <div className='max-w-4xl mx-auto'>
-                    {/* Profile Section */}
-                    <Card className='shadow-lg'>
-                        <CardHeader className='p-6 bg-gradient-to-r from-blue-500 to-purple-500 text-white'>
-                            <div className='flex justify-between items-center'>
-                                <div>
-                                    <h1 className='text-2xl font-bold'>
-                                        {editMode
-                                            ? 'Edit Your Profile'
-                                            : `Welcome, ${displayName}`}
-                                    </h1>
-                                    {!editMode && (
-                                        <p className='text-sm text-white/90'>
-                                            Email:{' '}
-                                            {user
-                                                ? user.email
-                                                : 'guest@example.com'}
-                                        </p>
-                                    )}
-                                </div>
-                                <Button
-                                    variant='secondary'
-                                    onClick={() => setEditMode(!editMode)}
-                                >
-                                    {editMode ? 'Cancel' : 'Edit Profile'}
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent className='p-6'>
-                            {editMode ? (
-                                <div className='space-y-4'>
+                <main className='p-4'>
+                    <div className='max-w-4xl mx-auto'>
+                        <Card className='shadow-lg'>
+                            <header className='p-6 bg-gradient-to-r from-blue-500 to-purple-500 text-white'>
+                                <div className='flex justify-between items-center'>
                                     <div>
-                                        <Label htmlFor='displayName'>
-                                            Display Name
-                                        </Label>
-                                        <Input
-                                            id='displayName'
-                                            value={displayName}
-                                            onChange={(e) =>
-                                                setDisplayName(e.target.value)
-                                            }
-                                            className='w-full mt-1'
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor='bio'>Bio</Label>
-                                        <Input
-                                            id='bio'
-                                            value={bio}
-                                            onChange={(e) =>
-                                                setBio(e.target.value)
-                                            }
-                                            className='w-full mt-1'
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor='avatar'>
-                                            Profile Picture
-                                        </Label>
-                                        <Input
-                                            type='file'
-                                            accept='image/*'
-                                            onChange={(e) =>
-                                                setImageFile(e.target.files[0])
-                                            }
-                                            className='w-full mt-1'
-                                        />
-                                        {imageFile && (
-                                            <Button
-                                                onClick={handleAvatarUpload}
-                                                className='mt-4'
-                                            >
-                                                Upload Avatar
-                                            </Button>
+                                        <h1 className='text-2xl font-bold'>
+                                            {editMode
+                                                ? 'Edit Your Profile'
+                                                : `Welcome, ${displayName}`}
+                                        </h1>
+                                        {!editMode && (
+                                            <p className='text-sm text-white/90'>
+                                                Email:{' '}
+                                                {user
+                                                    ? user.email
+                                                    : 'guest@example.com'}
+                                            </p>
                                         )}
                                     </div>
                                     <Button
-                                        onClick={handleSave}
-                                        className='w-full'
+                                        variant='secondary'
+                                        onClick={() => setEditMode(!editMode)}
                                     >
-                                        Save
+                                        {editMode ? 'Cancel' : 'Edit Profile'}
                                     </Button>
                                 </div>
-                            ) : (
-                                <div className='mt-4'>
-                                    <h2 className='text-xl font-semibold text-gray-800'>
-                                        Bio
-                                    </h2>
-                                    <p className='text-gray-600 mt-2'>
-                                        {bio ||
-                                            'This user has not added a bio yet.'}
-                                    </p>
-                                </div>
-                            )}
-                        </CardContent>
-                        <CardFooter className='p-6'>
-                            {user && (
-                                <div className='flex justify-end'>
-                                    <a
-                                        href={`/profile/${user.displayName}`}
-                                        className='text-blue-500 hover:underline'
+                            </header>
+                            <CardContent className='p-6'>
+                                {editMode ? (
+                                    <div className='space-y-4'>
+                                        <div>
+                                            <Label htmlFor='displayName'>
+                                                Display Name
+                                            </Label>
+                                            <Input
+                                                id='displayName'
+                                                value={displayName}
+                                                onChange={(e) =>
+                                                    setDisplayName(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className='w-full mt-1'
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor='bio'>Bio</Label>
+                                            <Input
+                                                id='bio'
+                                                value={bio}
+                                                onChange={(e) =>
+                                                    setBio(e.target.value)
+                                                }
+                                                className='w-full mt-1'
+                                            />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <h2 className='text-lg font-semibold'>
+                                            Bio
+                                        </h2>
+                                        <p>{bio}</p>
+                                    </div>
+                                )}
+                            </CardContent>
+                            <CardFooter className='p-6 bg-gray-200'>
+                                {editMode && (
+                                    <Button
+                                        variant='primary'
+                                        onClick={handleSave}
                                     >
-                                        View {user.displayName}'s Profile
-                                    </a>
-                                </div>
-                            )}
-                        </CardFooter>
-                    </Card>
-                </div>
-            </main>
-        </div>
+                                        Save Changes
+                                    </Button>
+                                )}
+                            </CardFooter>
+                        </Card>
+                    </div>
+                </main>
+            </div>
+        </>
     );
 };
 

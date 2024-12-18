@@ -13,11 +13,6 @@ interface LoginProps {
     onLogin: () => void;
 }
 
-// Toggle dark mode class on body
-const toggleDarkMode = () => {
-    document.body.classList.toggle('dark-mode');
-};
-
 const Login: React.FC<LoginProps> = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -37,14 +32,13 @@ const Login: React.FC<LoginProps> = () => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
 
+            // Handle remember me logic (optional persistence settings)
             if (rememberMe) {
-                // Optional: Set persistence for "Remember Me" (e.g., local persistence)
                 // auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
             }
 
-            navigate('/home'); // Redirect to the home page after successful login
+            navigate('/home'); // Redirect after login
         } catch (err: any) {
-            // Catch specific Firebase Auth errors
             const errorMessage =
                 err.message ||
                 'Failed to log in. Please check your credentials.';
@@ -55,21 +49,26 @@ const Login: React.FC<LoginProps> = () => {
     return (
         <div className='login-container'>
             <div className='login-panel'>
-                <form onSubmit={handleLogin} className='space-y-4'>
-                    <h2 className='login-h2'>Login</h2>
-                    {error && (
-                        <p className='text-red-500 text-center'>{error}</p>
-                    )}
+                <form onSubmit={handleLogin} className='space-y-6'>
+                    <div className='logo-container'>
+                        <img
+                            src='images/logo.png'
+                            alt='Logo'
+                            className='logo'
+                        />
+                    </div>
+                    <h2 className='login-h2'>Welcome Back,</h2>
+
+                    {/* Error Message */}
+                    {error && <p className='error-message'>{error}</p>}
 
                     {/* Email Input */}
                     <div>
-                        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
-                            Email
-                        </label>
+                        <label className='form-label'>Email</label>
                         <input
                             type='email'
                             placeholder='Email'
-                            className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+                            className='input-field'
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
@@ -77,19 +76,17 @@ const Login: React.FC<LoginProps> = () => {
 
                     {/* Password Input */}
                     <div>
-                        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
-                            Password
-                        </label>
+                        <label className='form-label'>Password</label>
                         <input
                             type='password'
                             placeholder='Password'
-                            className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+                            className='input-field'
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
 
-                    {/* Remember Me Checkbox */}
+                    {/* Remember Me */}
                     <div className='flex items-center'>
                         <Checkbox
                             id='remember-me'
@@ -99,7 +96,7 @@ const Login: React.FC<LoginProps> = () => {
                         />
                         <label
                             htmlFor='remember-me'
-                            className='ml-2 block text-sm text-gray-900 dark:text-gray-300'
+                            className='remember-me-label'
                         >
                             Remember Me
                         </label>
@@ -111,16 +108,16 @@ const Login: React.FC<LoginProps> = () => {
                     </Button>
                 </form>
 
-                {/* Signup Redirect */}
-                <p className='text-center text-sm text-gray-600 dark:text-gray-400'>
-                    Don't have an account?
+                {/* Signup Link */}
+                <p className='signup-text'>
+                    Don't have an account?{' '}
+                    <span
+                        onClick={() => navigate('/signup')}
+                        className='signup-link'
+                    >
+                        Sign up
+                    </span>
                 </p>
-                <Button
-                    onClick={() => navigate('/signup')}
-                    className='Signup-button'
-                >
-                    Sign up
-                </Button>
             </div>
         </div>
     );
